@@ -3,6 +3,8 @@
  */
 package mng.dload;
 
+import java.util.logging.Logger;
+
 import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -14,6 +16,8 @@ import mng.dload.annotations.GetSet;
  * 
  */
 public class AssistHelper {
+
+    private static final Logger logger = Logger.getLogger(AssistHelper.class.getName());
 
     public static ClassPool createClassPool() {
         ClassPool cp = ClassPool.getDefault();
@@ -49,6 +53,7 @@ public class AssistHelper {
             Object[] annotations = cc.getAnnotations();
             if (annotations != null) {
                 for (Object a : annotations) {
+                    // FIXME instanceof GetSet ? or annotationName ?
                     if (a instanceof GetSet) {
                         annotated = Boolean.TRUE;
                         break;
@@ -74,6 +79,44 @@ public class AssistHelper {
         newClassPath = newClassPath.replace("/", ".");
         newClassPath = newClassPath.replace(".class", "");
         return newClassPath;
+    }
+
+    public static CtClass createCtClass(String absolutePath) {
+        CtClass cc = null;
+
+        if (AssistHelper.isFileConsidered(absolutePath)) {
+            try {
+                String className = AssistHelper.getCompleteClassFromPath(absolutePath);
+                cc = AssistHelper.createClassPool().get(className);
+            } catch (Exception e) {
+                logger.severe(e.toString());
+            }
+        }
+        return cc;
+    }
+
+    public static CtClass detachCtClass(CtClass cc) {
+        if (cc != null) {
+            cc.detach();
+        }
+        return cc;
+    }
+
+    // FIXME find a better way...
+    static Boolean isFileConsidered(String absolutePath) {
+        Boolean considerIt = Boolean.FALSE;
+
+        if (absolutePath.contains("mng")) {
+            considerIt = Boolean.TRUE;
+        } else if (absolutePath.contains("com/mg")) {
+            considerIt = Boolean.TRUE;
+        }
+
+        if (absolutePath.endsWith(".")) {
+            considerIt = Boolean.FALSE;
+        }
+
+        return considerIt;
     }
 
 }

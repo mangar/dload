@@ -24,8 +24,8 @@ public class GetSetAssist_Test {
     GetSetAssist gsa;
 
     @Before
-    public void setUp() {
-        gsa = new GetSetAssist();
+    public void setUp() throws Exception {
+        gsa = GetSetAssist.create();
         gsa.cp = AssistHelper.createClassPool();
     }
 
@@ -45,10 +45,9 @@ public class GetSetAssist_Test {
 
     @Test
     public void enhance_Extends_ActionAutoCrudImpl_Test() throws Exception {
-        List<String> classes = new ArrayList<String>();
-        classes.add("mng.dload.extra.GetSetAnnotedForm");
-        gsa.classes = classes;
-
+        
+        GetSetAssist.create().doEnhance();
+        
         gsa.doEnhance();
 
         GetSetAnnotedForm action = new GetSetAnnotedForm();

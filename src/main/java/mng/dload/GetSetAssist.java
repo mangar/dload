@@ -11,8 +11,11 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
-import mng.dload.finders.ClassesFinderByAnnotation;
+import mng.dload.finders.ClassesFinderByMatch;
+import mng.dload.finders.match.GetSetAnnotationMatch;
+import mng.dload.finders.match.Match;
 
+import org.apache.catalina.loader.WebappClassLoader;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -27,21 +30,23 @@ public class GetSetAssist {
 
     ClassPool cp;
     List<String> classes;
+    Match match = GetSetAnnotationMatch.create();
 
     public static GetSetAssist create() throws Exception {
         GetSetAssist aa = new GetSetAssist();
-        aa.cp = AssistHelper.createClassPool();
+        aa.classes = ClassesFinderByMatch.create(aa.match).findClassesAtCp();
+        return aa;
+    }
 
-        // TODO padronizar a chamada, com ou sem ClassLoader
-        // TODO sincronizar entre o GetSet e o Action
-        // ClassLoader cl = (WebappClassLoader) aa.cp.getClass().getClassLoader();
-        aa.classes = ClassesFinderByAnnotation.create().findClassesByAnnotationName(GetSetAssist.GETSET_ANNOTATION);
-
+    public static GetSetAssist createWeb() throws Exception {
+        GetSetAssist aa = new GetSetAssist();
+        WebappClassLoader wcl = (WebappClassLoader) aa.cp.getClass().getClassLoader();
+        aa.classes = ClassesFinderByMatch.create(aa.match).findClassesAt(wcl);
         return aa;
     }
 
     GetSetAssist() {
-
+        cp = AssistHelper.createClassPool();
     }
 
     public void doEnhance() throws Exception {
@@ -62,8 +67,6 @@ public class GetSetAssist {
             logger.info("Enhancing Bean: " + clazz);
             cc = this.makeGettersAndSetters(cc);
             // TODO trocar por algo diferente .write, etc....
-            // WARNING trocar por algo diferente .write, etc....
-            // FIXME trocar por algo diferente .write, etc....
             Class c = cc.toClass();
         }
 
