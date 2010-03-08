@@ -112,7 +112,9 @@ public class AssistHelper {
             considerIt = Boolean.TRUE;
         }
 
-        if (absolutePath.endsWith(".")) {
+        if (absolutePath.endsWith("/")) {
+            considerIt = Boolean.FALSE;
+        } else if (absolutePath.endsWith(".properties")) {
             considerIt = Boolean.FALSE;
         }
 
